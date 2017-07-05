@@ -8,14 +8,13 @@ import chardet
 
 import xml.etree.ElementTree as ET
 
-MAX_ELEMENTS = 150
-MAX_EXPPROPS = 20
-
 class TableModel(QAbstractTableModel):
     def __init__(self, masterView, path, search, parent=None):
         super(TableModel, self).__init__(parent)
 
         self.path = path
+        self.tree = ET.parse(self.path)
+        self.root = self.tree.getroot()
 
         self.items = []
 
@@ -30,22 +29,19 @@ class TableModel(QAbstractTableModel):
         self.setupModel()
 
     def setupModel(self):
-        self.XMLTree = ET.parse(self.path)
-        root = self.XMLTree.getroot()
 
-        for screen in root.iter("Picture"):
+        for screen in self.root.iter("Picture"):
 
             badScreens = ["Kopie", "z_", "p_", "_Popup"]
             bad = False
-            for bS in badScreens:
-                if str(screen.attrib).find(bS) != -1:
+            for badScreen in badScreens:
+                if str(screen.attrib).find(badScreen) != -1:
                     bad = True
             if bad:
                 continue
 
-            for i in range(MAX_ELEMENTS):
-                for element in screen.iter("Elements_"+str(i)):
-
+            for element in screen:
+                if element.tag.startswith("Elements_"):
                     item = {}
 
                     item['tag'] = self.searchElement(element, "Variable")
@@ -65,8 +61,8 @@ class TableModel(QAbstractTableModel):
 
     def searchElement(self, element, tag):
         if tag == "Text":
-            for j in range(MAX_EXPPROPS):
-                for prop in element.iter("ExpProps_"+str(j)):
+            for prop in element:
+                if prop.tag.startswith("ExpProps_"):
                     var = prop.findall("Name")[0].text
                     find = var.find(tag)
 
@@ -86,8 +82,8 @@ class TableModel(QAbstractTableModel):
                             return tmp
 
         elif tag == "VariableLink":
-            for j in range(MAX_EXPPROPS):
-                for prop in element.iter("ExpProps_"+str(j)):
+            for prop in element:
+                if prop.tag.startswith("ExpProps_"):
                     var = prop.findall("Name")[0].text
                     tag = "Variable"
                     find = var.find(tag)
@@ -116,8 +112,8 @@ class TableModel(QAbstractTableModel):
                     if link[0].text == text:
                         if tag == "Type":
                             return text
-                        for j in range(MAX_EXPPROPS):
-                            for prop in element.iter("ExpProps_"+str(j)):
+                        for prop in element:
+                            if prop.tag.startswith("ExpProps_"):
                                 var = prop.findall("Name")[0].text
                                 find = var.find(tag)
 
@@ -225,9 +221,7 @@ class TableModel(QAbstractTableModel):
 
 
     def findLinkedVar(self, link):
-        root = self.XMLTree.getroot()
-
-        for variable in root.iter("Variable"):
+        for variable in self.root.iter("Variable"):
             if str(variable.attrib).find(str(link)) != -1:
                 return variable.findall("Recourceslabel")[0].text
 
@@ -243,8 +237,8 @@ class TableModel(QAbstractTableModel):
 
     def getGroupBoxes(self, item):
         groupBoxes = []
-        for i in range(MAX_ELEMENTS):
-            for element in item['screenElement'].iter("Elements_"+str(i)):
+        for element in item["screenElement"]:
+            if element.tag.startswith("Elements_"):
                 link = element.findall("LinkName")
                 if len(link) != 0:
                     link = link[0]
@@ -257,8 +251,8 @@ class TableModel(QAbstractTableModel):
 
         desired = [' ',' ',' ']
 
-        for i in range(MAX_ELEMENTS):
-            for element in item['screenElement'].iter("Elements_"+str(i)):
+        for element in item['screenElement']:
+            if element.tag.startswith("Elements_"):
                 link = element.findall("LinkName")
                 if len(link) != 0:
                     link = link[0]
@@ -333,7 +327,7 @@ class TableModel(QAbstractTableModel):
         for item in self.items:
             item['changed'] = False
 
-        self.XMLTree.write(path)
+        self.tree.write(path)
 
     def undo(self):
         try:

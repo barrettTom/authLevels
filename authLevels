@@ -77,8 +77,6 @@ class authLevels(QMainWindow):
 
         event.accept()
 
-
-
 app = QApplication(sys.argv)
 
 masterView = authLevels()
