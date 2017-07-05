@@ -40,7 +40,7 @@ class TableModel(QAbstractTableModel):
 
             for element in screen:
                 if element.tag.startswith("Elements_"):
-                    item = TableItem(element, self.root, screen, goodElements)
+                    item = TableItem(element, screen, goodElements)
                     if item.valid:
                         items.append(item)
 
@@ -230,7 +230,7 @@ class TableModel(QAbstractTableModel):
             self.items[index.row()]['plvl'] = value
 
             for prop in self.items[index.row()].element:
-                if prop.tag.startswith("ExpProps_")
+                if prop.tag.startswith("ExpProps_"):
                     var = prop.findall("Name")[0].text
                     find = var.find("Passwordlevel")
                     if find != -1:
