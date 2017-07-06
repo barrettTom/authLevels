@@ -96,13 +96,13 @@ class TableModel(QAbstractTableModel):
         f = open('changelog.txt','a')
         f.write(str(datetime.now())+'\n')
         for change in self.changes:
-            f.write(self.items[change['index'].row()]['tag'] + " from " + change['before'] + " to " + change['after'] + '\n')
+            f.write(self.items[change['index'].row()].tag + " from " + change['before'] + " to " + change['after'] + '\n')
         f.close()
 
         self.changes = []
 
         for item in self.items:
-            item['changed'] = False
+            item.changed = False
 
         self.tree.write(path)
 
@@ -227,7 +227,7 @@ class TableModel(QAbstractTableModel):
                 self.items[index.row()].changed = True
                 self.changes.append({'index' : index, 'before' : self.flipI(self.items[index.row()].plvl), 'after' : self.flipI(value)})
 
-            self.items[index.row()]['plvl'] = value
+            self.items[index.row()].plvl = value
 
             for prop in self.items[index.row()].element:
                 if prop.tag.startswith("ExpProps_"):
@@ -242,18 +242,18 @@ class TableModel(QAbstractTableModel):
         self.layoutAboutToBeChanged.emit()
         if col == 0:
             if order == 0:
-                self.items = sorted(self.items, key = lambda k: k['tag'])
+                self.items = sorted(self.items, key = lambda k: k.tag)
             else:
-                self.items = sorted(self.items, key = lambda k: k['tag'], reverse = True)
+                self.items = sorted(self.items, key = lambda k: k.tag, reverse = True)
         elif col == 1:
             if order == 0:
-                self.items = sorted(self.items, key = lambda k: k['plvl'])
+                self.items = sorted(self.items, key = lambda k: k.plvl)
             else:
-                self.items = sorted(self.items, key = lambda k: k['plvl'], reverse = True)
+                self.items = sorted(self.items, key = lambda k: k.plvl, reverse = True)
         elif col == 2:
             if order == 0:
-                self.items = sorted(self.items, key = lambda k: k['screen'])
+                self.items = sorted(self.items, key = lambda k: k.screen)
             else:
-                self.items = sorted(self.items, key = lambda k: k['screen'], reverse = True)
+                self.items = sorted(self.items, key = lambda k: k.screen, reverse = True)
 
         self.layoutChanged.emit()
